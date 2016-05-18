@@ -1,0 +1,55 @@
+{
+    "Resources" : {
+        "DatabaseInstance" : {
+            "Type" : "AWS::EC2::Instance",
+            "Properties" : {
+                "AvailabilityZone" : "us-west-2a",
+                "ImageId" : "ami-9abea4fb",
+                "InstanceType" : "t2.micro",
+                "KeyName" : "mw-local",
+                "SecurityGroupIds": ["sg-4e605529"],
+                "SubnetId": "subnet-81f30ff7",
+                "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", []]}}
+            }
+        },
+        "LaunchConfig" : {
+            "Type" : "AWS::AutoScaling::LaunchConfiguration",
+            "Properties" : {
+                "KeyName" : "mw-local",
+                "ImageId" : "ami-9abea4fb",
+                "SecurityGroups" : ["sg-b93814de"],
+                "InstanceType" : "t2.small",
+                "InstanceMonitoring": false,
+                "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+                    "#!/bin/bash -xe\n",
+                    "apt-get update\n",
+                    "apt-get install python-setuptools\n",
+                    "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                    "/usr/local/bin/cfn-init ",
+                    "-r LaunchConfig ",
+                    "--stack ", { "Ref" : "AWS::StackName" }, " ",
+                    "--region ", { "Ref" : "AWS::Region" }, "\n"
+                ]]}}
+            },
+            "Metadata" : {
+              "AWS::CloudFormation::Init" : {
+                "config" : {
+                    "files" : {
+                        "/home/ubuntu/stack_info.json" : {"content":{"database_ip":{"Fn::GetAtt" : [ "DatabaseInstance" , "PrivateIp" ]}}}
+                    }
+                }
+              }
+            }
+        },
+        "WebServerGroup" : {
+            "Type" : "AWS::AutoScaling::AutoScalingGroup",
+            "Properties" : {
+                "AvailabilityZones" : ["us-west-2a"],
+                "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+                "MinSize" : "1",
+                "MaxSize" : "2",
+                "VPCZoneIdentifier": ["subnet-81f30ff7"]
+            }
+        }
+    }
+}

@@ -1,0 +1,2 @@
+su - postgres -c "dropdb jobs"
+su - postgres -c "createdb -E UTF8 jobs"

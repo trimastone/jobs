@@ -1,0 +1,3 @@
+#!/bin/sh
+exec 2>&1
+exec chpst -u ubuntu uwsgi --ini-paste-logged /home/ubuntu/jobs/production.ini --http-socket :6543 -H /home/ubuntu/pyramid16

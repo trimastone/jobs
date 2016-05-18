@@ -1,0 +1,3 @@
+#!/bin/bash
+source /home/ubuntu/pyramid16/bin/activate
+/home/ubuntu/pyramid16/bin/qp /home/ubuntu/jobs/Maildir
